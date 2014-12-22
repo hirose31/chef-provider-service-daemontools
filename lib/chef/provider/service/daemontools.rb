@@ -60,19 +60,27 @@ class Chef
         end
 
         def start_service
-          shell_out!("#{@svc_command} -u #{@new_resource.service_dir}/#{@new_resource.service_name}")
+          if @current_resource.enabled && !@current_resource.running
+            shell_out!("#{@svc_command} -u #{@new_resource.service_dir}/#{@new_resource.service_name}")
+          end
         end
 
         def stop_service
-          shell_out!("#{@svc_command} -d #{@new_resource.service_dir}/#{@new_resource.service_name}")
+          if @current_resource.enabled && @current_resource.running
+            shell_out!("#{@svc_command} -d #{@new_resource.service_dir}/#{@new_resource.service_name}")
+          end
         end
 
         def reload_service
-          shell_out!("#{@svc_command} -h #{@new_resource.service_dir}/#{@new_resource.service_name}")
+          if @current_resource.enabled && @current_resource.running
+            shell_out!("#{@svc_command} -h #{@new_resource.service_dir}/#{@new_resource.service_name}")
+          end
         end
 
         def restart_service
-          shell_out!("#{@svc_command} -t #{@new_resource.service_dir}/#{@new_resource.service_name}")
+          if @current_resource.enabled && @current_resource.running
+            shell_out!("#{@svc_command} -t #{@new_resource.service_dir}/#{@new_resource.service_name}")
+          end
         end
 
         def service_status!
@@ -81,6 +89,15 @@ class Chef
             @current_resource.enabled(true)
             status = shell_out!("#{@svstat_command} #{service_link}")
             if status.exitstatus == 0
+
+              retry_count = 4
+              while status.stdout =~ /: supervise not running/
+                sleep 1
+                retry_count -= 1
+                status = shell_out!("#{@svstat_command} #{service_link}")
+                break if retry_count < 0
+              end
+
               if status.stdout =~ /: up \(pid [1-9]/
                 @current_resource.running(true)
               elsif status.stdout =~ /: down [1-9]/
