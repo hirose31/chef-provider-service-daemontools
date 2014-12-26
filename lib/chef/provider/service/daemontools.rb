@@ -91,7 +91,7 @@ class Chef
             if status.exitstatus == 0
 
               retry_count = 4
-              while status.stdout =~ /: supervise not running/
+              while status.stdout =~ /: supervise not running/ or status.stdout =~ /: unable to open supervise\/ok/
                 sleep 1
                 retry_count -= 1
                 status = shell_out!("#{@svstat_command} #{service_link}")
