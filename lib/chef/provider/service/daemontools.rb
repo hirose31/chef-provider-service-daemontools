@@ -55,7 +55,7 @@ class Chef
         def disable_service
           if @current_resource.enabled
             service_link = "#{@new_resource.service_dir}/#{@new_resource.service_name}"
-            shell_out!("#{@svc_command} -dx . log; rm -f #{service_link}", :cwd => service_link)
+            shell_out!("rm -f #{service_link} && #{@svc_command} -dx . log", :cwd => service_link)
           end
         end
 
