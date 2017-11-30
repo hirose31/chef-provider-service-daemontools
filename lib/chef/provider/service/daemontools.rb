@@ -3,7 +3,6 @@ require "chef/provider/service/daemontools/version"
 require 'chef/mixin/shell_out'
 require 'chef/provider/service'
 require 'chef/resource/service'
-require 'chef/mixin/command'
 
 class Chef
   class Resource
